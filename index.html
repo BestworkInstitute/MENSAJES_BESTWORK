@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Envio de Mensajes</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <style>
     body {
       font-family: 'Poppins', sans-serif;
@@ -19,7 +18,6 @@
       justify-content: center;
       height: 100vh;
     }
-
     .container {
       background-color: white;
       border-radius: 12px;
@@ -29,9 +27,7 @@
       padding: 20px;
       text-align: center;
     }
-
-    input[type="text"],
-    select {
+    input, select {
       width: 80%;
       padding: 10px;
       margin: 10px 0;
@@ -39,7 +35,6 @@
       border-radius: 8px;
       font-size: 16px;
     }
-
     button {
       background-color: #FF7F50;
       color: white;
@@ -50,37 +45,21 @@
       font-size: 16px;
       cursor: pointer;
     }
-
     button:hover {
       background-color: #ff5a2b;
     }
-
-    #consoleOutput {
-      background-color: #222;
-      color: #00FF7F;
-      padding: 15px;
-      margin: 20px 0;
-      height: 200px;
-      overflow-y: auto;
-      border-radius: 8px;
-      font-family: monospace;
-    }
   </style>
 </head>
-
 <body>
-
   <div class="container">
-    <h2>Envio de Mensajes Personalizados</h2>
-
+    <h2>Enviar Mensaje</h2>
     <input type="text" id="nombre" placeholder="Nombre">
     <input type="text" id="celular" placeholder="Celular">
     <select id="area">
-      <option value="" disabled selected>Seleccione un área</option>
-      <option value="TALLERES">TALLERES</option>
-      <option value="PLATAFORMA">PLATAFORMA</option>
-      <option value="PAGOS">PAGOS</option>
-      <option value="OTRO">OTRO</option>
+      <option value="TALLERES">Talleres</option>
+      <option value="PLATAFORMA">Plataforma</option>
+      <option value="PAGOS">Pagos</option>
+      <option value="OTRO">Otro</option>
     </select>
     <button onclick="enviarMensaje()">Enviar Mensaje</button>
 
@@ -93,19 +72,34 @@
       const celular = document.getElementById('celular').value;
       const area = document.getElementById('area').value;
 
-      if (!nombre || !celular || !area) {
-        alert("Por favor complete todos los campos.");
-        return;
-      }
-
       let mensaje = '';
+
       if (area === 'PAGOS') {
-        mensaje = `¡Hola ${nombre}! Soy tu asistente virtual del Area de Cobranzas de Bestwork. Me han derivado tu caso y me gustaría saber si tienes tiempo para conversar ahora.`;
+        mensaje = `¡Hola ${nombre}! Soy tu asistente virtual del Área de Cobranzas de Bestwork. Me han derivado tu caso y me gustaría saber si tienes tiempo para conversar ahora.`;
       } else {
-        mensaje = `¡Hola ${nombre}! Soy tu asistente virtual del Area Académica de Bestwork. Me han derivado tu caso y me gustaría saber si tienes tiempo para conversar ahora.`;
+        mensaje = `¡Hola ${nombre}! Soy tu asistente virtual del Área Académica de Bestwork. Me han derivado tu caso y me gustaría saber si tienes tiempo para conversar ahora.`;
       }
 
-      logToConsole(`Enviando mensaje a ${celular}: ${mensaje}`);
+      // Enviar mensaje a la API
+      enviarMensajeAPI(celular, nombre, area, mensaje);
+    }
+
+    function enviarMensajeAPI(celular, nombre, area, mensaje) {
+      const url = `https://flows.messagebird.com/flows/[FLOW_ID]/invoke`;
+      const params = {
+        CELULAR: celular,
+        NOMBRE: nombre,
+        AREA: area,
+        MENSAJE: mensaje
+      };
+
+      axios.post(url, null, { params: params })
+        .then(response => {
+          logToConsole(`Mensaje enviado a ${nombre} (${celular})`);
+        })
+        .catch(error => {
+          logToConsole(`Error enviando mensaje a ${nombre} (${celular}): ${error}`);
+        });
     }
 
     function logToConsole(message) {
@@ -116,6 +110,4 @@
     }
   </script>
 </body>
-
 </html>
-
