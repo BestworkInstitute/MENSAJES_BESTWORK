@@ -32,33 +32,8 @@
       text-align: center;
     }
 
-    .login-container {
-      margin-bottom: 20px;
-    }
-
-    input[type="text"],
-    input[type="password"] {
-      width: 80%;
-      padding: 10px;
-      margin: 10px 0;
-      border: 2px solid #00A4E4;
-      border-radius: 8px;
-      font-size: 16px;
-    }
-
-    button {
-      background-color: #FF7F50;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      margin: 10px;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #ff5a2b;
+    input[type="file"] {
+      margin: 20px 0;
     }
 
     table {
@@ -90,13 +65,19 @@
       font-family: monospace;
     }
 
-    img {
-      width: 150px;
-      margin-bottom: 20px;
+    button {
+      background-color: #FF7F50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 10px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
     }
 
-    .hidden {
-      display: none;
+    button:hover {
+      background-color: #ff5a2b;
     }
   </style>
 </head>
@@ -105,15 +86,7 @@
 
   <div class="container">
     <img src="https://bestwork.cl/wp-content/uploads/2023/05/Logo.png" alt="Logo Bestwork">
-
-    <div id="loginPanel" class="login-container">
-      <h2>Iniciar Sesión</h2>
-      <input type="text" id="username" placeholder="Nombre de Usuario">
-      <input type="password" id="password" placeholder="Contraseña">
-      <button onclick="login()">Ingresar</button>
-    </div>
-
-    <div id="mainPanel" class="hidden">
+    <div id="mainPanel">
       <h2>Subir Documento de Excel</h2>
       <input type="file" id="uploadExcel">
       <table id="dataTable">
@@ -128,59 +101,47 @@
         <tbody></tbody>
       </table>
       <button id="enviarMensajesBtn" disabled>Enviar Mensajes</button>
-
       <div id="consoleOutput"></div>
     </div>
   </div>
 
   <script>
-    let usuarios = [
-      { nombre: 'sbilbao', contraseña: 'bestwebsb.1', dueño: 'Stephy' },
-      { nombre: 'ftobar', contraseña: 'bestwebft.1', dueño: 'Fabian' },
-      { nombre: 'mrestovic', contraseña: 'bestwebmr.1', dueño: 'Max' },
-      { nombre: 'jroco', contraseña: 'bestwebjr.1', dueño: 'Javiera' },
-      { nombre: 'cviveros', contraseña: 'bestwebcv.1', dueño: 'Catalina' }
-    ];
-
-    function login() {
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
-      const usuarioValido = usuarios.find(u => u.nombre === username && u.contraseña === password);
-      if (usuarioValido) {
-        document.getElementById('loginPanel').classList.add('hidden');
-        document.getElementById('mainPanel').classList.remove('hidden');
-        logToConsole(`Bienvenido ${usuarioValido.dueño}`);
-      } else {
-        alert('Usuario o contraseña incorrectos');
-      }
-    }
-
     let datos = [];
     const dataTableBody = document.querySelector("#dataTable tbody");
-    document.getElementById('uploadExcel').addEventListener('change', function(event) {
+
+    document.getElementById('uploadExcel').addEventListener('change', function (event) {
       const file = event.target.files[0];
       const reader = new FileReader();
-      reader.onload = function(e) {
+      reader.onload = function (e) {
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, { type: 'array' });
         const sheetName = workbook.SheetNames[0];
         const worksheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
         datos = [];
         dataTableBody.innerHTML = "";
+
         worksheet.forEach((row, index) => {
           try {
             let celular = String(row["CELULAR"]).replace('\u202a', '').replace('\u202c', '');
-            let cleanedData = [row["NOMBRE"], parseInt(celular), row["AREA"], row["MENSAJE"]];
+            let mensaje = row["AREA"] === "Pagos" ?
+              `¡Hola ${row["NOMBRE"]}! Soy tu asistente virtual del Área de Cobranzas. Me han derivado tu caso y me gustaría saber si tienes tiempo para conversar ahora.` :
+              `¡Hola ${row["NOMBRE"]}! Soy tu asistente virtual de Admisión. Me han derivado tu caso y me gustaría saber si tienes tiempo para conversar ahora.`;
+
+            let cleanedData = [row["NOMBRE"], parseInt(celular), row["AREA"], mensaje];
             datos.push(cleanedData);
+
             let newRow = dataTableBody.insertRow();
             newRow.insertCell(0).textContent = row["NOMBRE"];
             newRow.insertCell(1).textContent = celular;
             newRow.insertCell(2).textContent = row["AREA"];
-            newRow.insertCell(3).textContent = row["MENSAJE"];
+            newRow.insertCell(3).textContent = mensaje;
+
           } catch (error) {
             logToConsole(`Error en el índice ${index}: ${row["CELULAR"]} no es un número válido.`);
           }
         });
+
         if (datos.length > 0) {
           document.getElementById("enviarMensajesBtn").disabled = false;
           logToConsole(`${datos.length} contactos cargados`);
@@ -215,7 +176,7 @@
           contador80En15Min++;
         } else {
           logToConsole("Esperando 15 minutos para enviar otros 60 mensajes...");
-          await new Promise(resolve => setTimeout(resolve, 900000));
+          await new Promise(resolve => setTimeout(resolve, 900000)); // 15 minutos
           contador80En15Min = 0;
           await agregarContactoAFlow(datos[i][1], datos[i][0], datos[i][2], datos[i][3], flow);
           contador80En15Min++;
@@ -224,7 +185,7 @@
       logToConsole("ENVÍO COMPLETADO");
     }
 
-    document.getElementById("enviarMensajesBtn").addEventListener("click", function() {
+    document.getElementById("enviarMensajesBtn").addEventListener("click", function () {
       enviarMensajes();
     });
 
@@ -238,3 +199,4 @@
 </body>
 
 </html>
+
