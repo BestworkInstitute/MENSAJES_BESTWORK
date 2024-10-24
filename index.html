@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,7 +20,6 @@
       justify-content: center;
       height: 100vh;
     }
-
     .container {
       background-color: white;
       border-radius: 12px;
@@ -31,40 +29,14 @@
       padding: 20px;
       text-align: center;
     }
-
-    input[type="file"] {
-      margin: 20px 0;
-    }
-
-    table {
-      width: 100%;
-      margin: 20px 0;
-      border-collapse: collapse;
-    }
-
-    th,
-    td {
-      border: 1px solid #ddd;
-      padding: 12px;
-      text-align: left;
-    }
-
-    th {
-      background-color: #00A4E4;
-      color: white;
-    }
-
-    #consoleOutput {
-      background-color: #222;
-      color: #00FF7F;
-      padding: 15px;
-      margin: 20px 0;
-      height: 200px;
-      overflow-y: auto;
+    input[type="text"] {
+      width: 80%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 2px solid #00A4E4;
       border-radius: 8px;
-      font-family: monospace;
+      font-size: 16px;
     }
-
     button {
       background-color: #FF7F50;
       color: white;
@@ -75,73 +47,88 @@
       font-size: 16px;
       cursor: pointer;
     }
-
     button:hover {
       background-color: #ff5a2b;
     }
+    table {
+      width: 100%;
+      margin: 20px 0;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #00A4E4;
+      color: white;
+    }
+    #consoleOutput {
+      background-color: #222;
+      color: #00FF7F;
+      padding: 15px;
+      margin: 20px 0;
+      height: 200px;
+      overflow-y: auto;
+      border-radius: 8px;
+      font-family: monospace;
+    }
+    img {
+      width: 150px;
+      margin-bottom: 20px;
+    }
   </style>
 </head>
-
 <body>
-
   <div class="container">
     <img src="https://bestwork.cl/wp-content/uploads/2023/05/Logo.png" alt="Logo Bestwork">
-    <div id="mainPanel">
-      <h2>Subir Documento de Excel</h2>
-      <input type="file" id="uploadExcel">
-      <table id="dataTable">
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Celular</th>
-            <th>Área</th>
-            <th>Mensaje</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-      <button id="enviarMensajesBtn" disabled>Enviar Mensajes</button>
-      <div id="consoleOutput"></div>
-    </div>
+    <h2>Subir Documento de Excel</h2>
+    <input type="file" id="uploadExcel">
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Celular</th>
+          <th>Área</th>
+          <th>Mensaje</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <button id="enviarMensajesBtn" disabled>Enviar Mensajes</button>
+    <div id="consoleOutput"></div>
   </div>
-
+  
   <script>
     let datos = [];
     const dataTableBody = document.querySelector("#dataTable tbody");
-
-    document.getElementById('uploadExcel').addEventListener('change', function (event) {
+    
+    document.getElementById('uploadExcel').addEventListener('change', function(event) {
       const file = event.target.files[0];
       const reader = new FileReader();
-      reader.onload = function (e) {
+      reader.onload = function(e) {
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, { type: 'array' });
         const sheetName = workbook.SheetNames[0];
         const worksheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
-
+        
         datos = [];
         dataTableBody.innerHTML = "";
-
         worksheet.forEach((row, index) => {
           try {
             let celular = String(row["CELULAR"]).replace('\u202a', '').replace('\u202c', '');
-            let mensaje = row["AREA"] === "Pagos" ?
-              `¡Hola ${row["NOMBRE"]}! Soy tu asistente virtual del Área de Cobranzas. Me han derivado tu caso y me gustaría saber si tienes tiempo para conversar ahora.` :
-              `¡Hola ${row["NOMBRE"]}! Soy tu asistente virtual de Admisión. Me han derivado tu caso y me gustaría saber si tienes tiempo para conversar ahora.`;
-
-            let cleanedData = [row["NOMBRE"], parseInt(celular), row["AREA"], mensaje];
+            let cleanedData = [row["NOMBRE"], parseInt(celular), row["AREA"], generarMensaje(row["NOMBRE"], row["AREA"])];
             datos.push(cleanedData);
-
             let newRow = dataTableBody.insertRow();
             newRow.insertCell(0).textContent = row["NOMBRE"];
             newRow.insertCell(1).textContent = celular;
             newRow.insertCell(2).textContent = row["AREA"];
-            newRow.insertCell(3).textContent = mensaje;
-
+            newRow.insertCell(3).textContent = generarMensaje(row["NOMBRE"], row["AREA"]);
           } catch (error) {
             logToConsole(`Error en el índice ${index}: ${row["CELULAR"]} no es un número válido.`);
           }
         });
-
         if (datos.length > 0) {
           document.getElementById("enviarMensajesBtn").disabled = false;
           logToConsole(`${datos.length} contactos cargados`);
@@ -149,6 +136,14 @@
       };
       reader.readAsArrayBuffer(file);
     });
+    
+    function generarMensaje(nombre, area) {
+      if (area === "Pagos") {
+        return `¡Hola ${nombre}! Soy tu asistente virtual del Área de Cobranzas. Me han derivado tu caso y me gustaría saber si tienes tiempo para conversar ahora.`;
+      } else {
+        return `¡Hola ${nombre}! Soy tu asistente virtual de Admisión. Me han derivado tu caso y me gustaría saber si tienes tiempo para conversar ahora.`;
+      }
+    }
 
     const flow = "bb848b58-c891-4aec-ac21-738a857bc778";
     let contador80En15Min = 0;
@@ -176,7 +171,7 @@
           contador80En15Min++;
         } else {
           logToConsole("Esperando 15 minutos para enviar otros 60 mensajes...");
-          await new Promise(resolve => setTimeout(resolve, 900000)); // 15 minutos
+          await new Promise(resolve => setTimeout(resolve, 900000));
           contador80En15Min = 0;
           await agregarContactoAFlow(datos[i][1], datos[i][0], datos[i][2], datos[i][3], flow);
           contador80En15Min++;
@@ -185,7 +180,7 @@
       logToConsole("ENVÍO COMPLETADO");
     }
 
-    document.getElementById("enviarMensajesBtn").addEventListener("click", function () {
+    document.getElementById("enviarMensajesBtn").addEventListener("click", function() {
       enviarMensajes();
     });
 
@@ -197,6 +192,4 @@
     }
   </script>
 </body>
-
 </html>
-
