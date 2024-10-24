@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Envio de Mensajes</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
   <style>
@@ -31,7 +32,8 @@
       text-align: center;
     }
 
-    input[type="text"] {
+    input[type="text"],
+    select {
       width: 80%;
       padding: 10px;
       margin: 10px 0;
@@ -40,13 +42,15 @@
       font-size: 16px;
     }
 
-    select {
+    textarea {
       width: 80%;
       padding: 10px;
       margin: 10px 0;
       border: 2px solid #00A4E4;
       border-radius: 8px;
       font-size: 16px;
+      resize: none;
+      height: 100px;
     }
 
     button {
@@ -64,23 +68,6 @@
       background-color: #ff5a2b;
     }
 
-    table {
-      width: 100%;
-      margin: 20px 0;
-      border-collapse: collapse;
-    }
-
-    th, td {
-      border: 1px solid #ddd;
-      padding: 12px;
-      text-align: left;
-    }
-
-    th {
-      background-color: #00A4E4;
-      color: white;
-    }
-
     #consoleOutput {
       background-color: #222;
       color: #00FF7F;
@@ -96,78 +83,75 @@
       width: 150px;
       margin-bottom: 20px;
     }
-
   </style>
 </head>
 
 <body>
 
   <div class="container">
+    <!-- Logo -->
     <img src="https://bestwork.cl/wp-content/uploads/2023/05/Logo.png" alt="Logo Bestwork">
-    <h2>Enviar Mensajes</h2>
+
+    <!-- Formulario para datos -->
+    <h2>Enviar Mensaje</h2>
 
     <input type="text" id="nombre" placeholder="Nombre">
     <input type="text" id="celular" placeholder="Celular">
-    <select id="AREA">
+
+    <select id="area" onchange="updateMensaje()">
+      <option value="">Seleccionar Área</option>
       <option value="TALLERES">Talleres</option>
       <option value="CLASES">Clases</option>
       <option value="PAGOS">Pagos</option>
       <option value="OTROS">Otros</option>
     </select>
 
-    <button id="enviarMensajesBtn">Enviar Mensaje</button>
+    <textarea id="mensaje" placeholder="Mensaje"></textarea>
 
-    <table id="dataTable">
-      <thead>
-        <tr>
-          <th>Nombre</th>
-          <th>Celular</th>
-          <th>Área</th>
-          <th>Mensaje</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <button onclick="enviarMensaje()">Enviar Mensaje</button>
 
+    <!-- Console Output -->
     <div id="consoleOutput"></div>
   </div>
 
   <script>
-    const dataTableBody = document.querySelector("#dataTable tbody");
-
-    document.getElementById('enviarMensajesBtn').addEventListener('click', function () {
-      const NOMBRE = document.getElementById("nombre").value;
-      const CELULAR = document.getElementById("celular").value;
-      const AREA = document.getElementById("AREA").value;
-
-      if (!NOMBRE || !CELULAR) {
-        logToConsole("Por favor, ingresa un nombre y un número de celular.");
-        return;
-      }
-
-      const MENSAJE = generarMensaje(NOMBRE, AREA);
-      agregarFila(NOMBRE, CELULAR, AREA, MENSAJE);
-      logToConsole(`Mensaje para ${NOMBRE} en el área de ${AREA} generado correctamente.`);
-    });
-
-    function generarMensaje(NOMBRE, AREA) {
-      if (AREA === "PAGOS") {
-        return `¡Hola ${NOMBRE}! Soy tu asistente virtual del Área de Cobranzas. Me han derivado tu caso y me gustaría saber si tienes tiempo para conversar ahora.`;
-      } else if (AREA === "TALLERES") {
-        return `¡Hola ${NOMBRE}! Tenemos nuevos talleres disponibles. ¿Te gustaría participar?`;
-      } else if (AREA === "CLASES") {
-        return `¡Hola ${NOMBRE}! Tus clases están a punto de comenzar. ¿Estás listo?`;
+    function updateMensaje() {
+      const area = document.getElementById('area').value;
+      const mensajeField = document.getElementById('mensaje');
+      
+      if (area === 'PAGOS') {
+        mensajeField.value = "Soy tu asistente virtual del Área de Cobranzas. Me han derivado tu caso y me gustaría saber si tienes tiempo para conversar ahora.";
+      } else if (area === 'OTROS') {
+        mensajeField.value = "Soy tu asistente virtual de Bestwork. Me han derivado tu caso y me gustaría saber si tienes tiempo para conversar ahora.";
       } else {
-        return `¡Hola ${NOMBRE}! Soy tu asistente virtual. ¿En qué puedo ayudarte hoy?`;
+        mensajeField.value = '';
       }
     }
 
-    function agregarFila(NOMBRE, CELULAR, AREA, MENSAJE) {
-      let newRow = dataTableBody.insertRow();
-      newRow.insertCell(0).textContent = NOMBRE;
-      newRow.insertCell(1).textContent = CELULAR;
-      newRow.insertCell(2).textContent = AREA;
-      newRow.insertCell(3).textContent = MENSAJE;
+    const flow = "bb848b58-c891-4aec-ac21-738a857bc778";
+    async function enviarMensaje() {
+      const nombre = document.getElementById('nombre').value;
+      const celular = document.getElementById('celular').value;
+      const mensaje = document.getElementById('mensaje').value;
+
+      if (!nombre || !celular || !mensaje) {
+        alert("Por favor, completa todos los campos.");
+        return;
+      }
+
+      const url = `https://flows.messagebird.com/flows/${flow}/invoke`;
+      const headers = {
+        NOMBRE: nombre,
+        CELULAR: celular,
+        MENSAJE: mensaje
+      };
+
+      try {
+        const response = await axios.post(url, null, { params: headers });
+        logToConsole(`Mensaje enviado a ${nombre} (${celular})`);
+      } catch (error) {
+        logToConsole(`Error enviando mensaje a ${nombre} (${celular}): ${error}`);
+      }
     }
 
     function logToConsole(message) {
@@ -177,6 +161,7 @@
       consoleOutput.scrollTop = consoleOutput.scrollHeight;
     }
   </script>
+
 </body>
 
 </html>
