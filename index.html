@@ -45,8 +45,8 @@
         <!-- Main Panel (hidden initially) -->
         <div id="mainPanel" class="hidden">
             <h2 class="text-2xl font-bold mb-4">Enviar Mensaje</h2>
-            <input type="text" id="nombre" placeholder="Nombre del Sede" aria-label="Nombre del Sede" class="border-2 border-blue-400 p-2 rounded-lg mb-4 w-full">
-            <input type="text" id="celular" placeholder="Celular del Sede" aria-label="Celular del Sede" class="border-2 border-blue-400 p-2 rounded-lg mb-4 w-full">
+            <input type="text" id="nombre" placeholder="Nombre Alumno" aria-label="Nombre" class="border-2 border-blue-400 p-2 rounded-lg mb-4 w-full">
+            <input type="text" id="celular" placeholder="Celular Alumno" aria-label="Celular" class="border-2 border-blue-400 p-2 rounded-lg mb-4 w-full">
             <select id="area" class="border-2 border-blue-400 p-2 rounded-lg mb-4 w-full">
                 <option value="TALLERES">TALLERES</option>
                 <option value="PLATAFORMA">PLATAFORMA</option>
@@ -104,7 +104,7 @@
 
             try {
                 const response = await axios.post(url, null, { params: headers });
-                logToConsole(`Mensaje enviado a ${nombre} (${celular})`);
+                logToConsole(`Mensaje ${mensaje}, enviado a ${nombre} (${celular})`);
             } catch (error) {
                 logToConsole(`Error enviando mensaje a ${nombre} (${celular}): ${error}`);
             }
