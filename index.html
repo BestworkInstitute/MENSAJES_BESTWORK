@@ -32,7 +32,7 @@
         .login-container {
             margin-bottom: 20px;
         }
-        input[type="text"], input[type="password"], select {
+        input[type="password"] {
             width: 80%;
             padding: 10px;
             margin: 10px 0;
@@ -80,8 +80,7 @@
         <!-- Login Panel -->
         <div id="loginPanel" class="login-container">
             <h2>Iniciar Sesión</h2>
-            <input type="text" id="username" placeholder="Nombre de Usuario">
-            <input type="password" id="password" placeholder="Contraseña">
+            <input type="password" id="clave" placeholder="Ingresa la Clave">
             <button onclick="login()">Ingresar</button>
         </div>
 
@@ -103,24 +102,16 @@
     </div>
     
     <script>
-        let usuarios = [
-            { nombre: 'sbilbao', contraseña: 'bestwebsb.1', dueño: 'Stephy' },
-            { nombre: 'ftobar', contraseña: 'bestwebft.1', dueño: 'Fabian' },
-            { nombre: 'mrestovic', contraseña: 'bestwebmr.1', dueño: 'Max' },
-            { nombre: 'jroco', contraseña: 'bestwebjr.1', dueño: 'Javiera' },
-            { nombre: 'cviveros', contraseña: 'bestwebcv.1', dueño: 'Catalina' }
-        ];
+        const CLAVE_CORRECTA = 'BESTWORK2024';
 
         function login() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const usuarioValido = usuarios.find(u => u.nombre === username && u.contraseña === password);
-            if (usuarioValido) {
+            const clave = document.getElementById('clave').value;
+            if (clave === CLAVE_CORRECTA) {
                 document.getElementById('loginPanel').classList.add('hidden');
                 document.getElementById('mainPanel').classList.remove('hidden');
-                logToConsole(`Bienvenido ${usuarioValido.dueño}`);
+                logToConsole('Bienvenido');
             } else {
-                alert('Usuario o contraseña incorrectos');
+                alert('Clave incorrecta');
             }
         }
 
@@ -130,7 +121,6 @@
             const nombre = document.getElementById('nombre').value;
             const celular = document.getElementById('celular').value;
             const area = document.getElementById('area').value;
-
             let mensaje;
 
             // Definir el mensaje según el área seleccionada
