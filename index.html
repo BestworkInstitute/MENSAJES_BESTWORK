@@ -1,167 +1,176 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Envio de Mensajes</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background-color: #f4f4f9;
-      color: #333;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
-
-    .container {
-      background-color: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      width: 90%;
-      max-width: 600px;
-      padding: 20px;
-      text-align: center;
-    }
-
-    input[type="text"],
-    select {
-      width: 80%;
-      padding: 10px;
-      margin: 10px 0;
-      border: 2px solid #00A4E4;
-      border-radius: 8px;
-      font-size: 16px;
-    }
-
-    textarea {
-      width: 80%;
-      padding: 10px;
-      margin: 10px 0;
-      border: 2px solid #00A4E4;
-      border-radius: 8px;
-      font-size: 16px;
-      resize: none;
-      height: 100px;
-    }
-
-    button {
-      background-color: #FF7F50;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      margin: 10px;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #ff5a2b;
-    }
-
-    #consoleOutput {
-      background-color: #222;
-      color: #00FF7F;
-      padding: 15px;
-      margin: 20px 0;
-      height: 200px;
-      overflow-y: auto;
-      border-radius: 8px;
-      font-family: monospace;
-    }
-
-    img {
-      width: 150px;
-      margin-bottom: 20px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Envio de Mensajes</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+            padding: 20px;
+            text-align: center;
+        }
+        .login-container {
+            margin-bottom: 20px;
+        }
+        input[type="text"], input[type="password"], select {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 2px solid #00A4E4;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #FF7F50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #ff5a2b;
+        }
+        #consoleOutput {
+            background-color: #222;
+            color: #00FF7F;
+            padding: 15px;
+            margin: 20px 0;
+            height: 200px;
+            overflow-y: auto;
+            border-radius: 8px;
+            font-family: monospace;
+        }
+        img {
+            width: 150px;
+            margin-bottom: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
 </head>
-
 <body>
+    <div class="container">
+        <!-- Logo -->
+        <img src="https://bestwork.cl/wp-content/uploads/2023/05/Logo.png" alt="Logo Bestwork">
+        
+        <!-- Login Panel -->
+        <div id="loginPanel" class="login-container">
+            <h2>Iniciar Sesión</h2>
+            <input type="text" id="username" placeholder="Nombre de Usuario">
+            <input type="password" id="password" placeholder="Contraseña">
+            <button onclick="login()">Ingresar</button>
+        </div>
 
-  <div class="container">
-    <!-- Logo -->
-    <img src="https://bestwork.cl/wp-content/uploads/2023/05/Logo.png" alt="Logo Bestwork">
+        <!-- Main Panel (hidden initially) -->
+        <div id="mainPanel" class="hidden">
+            <h2>Enviar Mensaje</h2>
+            <input type="text" id="nombre" placeholder="Nombre del Sede">
+            <input type="text" id="celular" placeholder="Celular del Sede">
+            <select id="area">
+                <option value="TALLERES">TALLERES</option>
+                <option value="PLATAFORMA">PLATAFORMA</option>
+                <option value="PAGOS">PAGOS</option>
+                <option value="OTRO">OTRO</option>
+            </select>
+            <button id="enviarMensajesBtn">Enviar Mensaje</button>
+            <!-- Console Output -->
+            <div id="consoleOutput"></div>
+        </div>
+    </div>
+    
+    <script>
+        let usuarios = [
+            { nombre: 'sbilbao', contraseña: 'bestwebsb.1', dueño: 'Stephy' },
+            { nombre: 'ftobar', contraseña: 'bestwebft.1', dueño: 'Fabian' },
+            { nombre: 'mrestovic', contraseña: 'bestwebmr.1', dueño: 'Max' },
+            { nombre: 'jroco', contraseña: 'bestwebjr.1', dueño: 'Javiera' },
+            { nombre: 'cviveros', contraseña: 'bestwebcv.1', dueño: 'Catalina' }
+        ];
 
-    <!-- Formulario para datos -->
-    <h2>Enviar Mensaje</h2>
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const usuarioValido = usuarios.find(u => u.nombre === username && u.contraseña === password);
+            if (usuarioValido) {
+                document.getElementById('loginPanel').classList.add('hidden');
+                document.getElementById('mainPanel').classList.remove('hidden');
+                logToConsole(`Bienvenido ${usuarioValido.dueño}`);
+            } else {
+                alert('Usuario o contraseña incorrectos');
+            }
+        }
 
-    <input type="text" id="nombre" placeholder="Nombre">
-    <input type="text" id="celular" placeholder="Celular">
+        const flow = "bb848b58-c891-4aec-ac21-738a857bc778";
 
-    <select id="area" onchange="updateMensaje()">
-      <option value="">Seleccionar Área</option>
-      <option value="TALLERES">Talleres</option>
-      <option value="CLASES">Clases</option>
-      <option value="PAGOS">Pagos</option>
-      <option value="OTROS">Otros</option>
-    </select>
+        async function enviarMensaje() {
+            const nombre = document.getElementById('nombre').value;
+            const celular = document.getElementById('celular').value;
+            const area = document.getElementById('area').value;
 
-    <textarea id="mensaje" placeholder="Mensaje"></textarea>
+            let mensaje;
 
-    <button onclick="enviarMensaje()">Enviar Mensaje</button>
+            // Definir el mensaje según el área seleccionada
+            switch (area) {
+                case "TALLERES":
+                case "PLATAFORMA":
+                    mensaje = `¡Hola ${nombre}! Soy tu asistente virtual de Área Académica. Me han derivado tu caso y me gustaría saber si tienes tiempo para conversar ahora.`;
+                    break;
+                case "PAGOS":
+                    mensaje = `¡Hola ${nombre}! Soy tu asistente virtual de Área de Cobranzas. Me han derivado tu caso y me gustaría saber si tienes tiempo para conversar ahora.`;
+                    break;
+                default:
+                    mensaje = `¡Hola ${nombre}! Soy tu asistente virtual. ¿Tienes tiempo para conversar ahora?`;
+                    break;
+            }
 
-    <!-- Console Output -->
-    <div id="consoleOutput"></div>
-  </div>
+            const url = `https://flows.messagebird.com/flows/${flow}/invoke`;
+            const headers = {
+                CELULAR: celular,
+                NOMBRE: nombre,
+                MENSAJE: mensaje,
+                AREA: area
+            };
 
-  <script>
-    function updateMensaje() {
-      const area = document.getElementById('area').value;
-      const mensajeField = document.getElementById('mensaje');
-      
-      if (area === 'PAGOS') {
-        mensajeField.value = "Soy tu asistente virtual del Área de Cobranzas. Me han derivado tu caso y me gustaría saber si tienes tiempo para conversar ahora.";
-      } else if (area === 'OTROS') {
-        mensajeField.value = "Soy tu asistente virtual de Bestwork. Me han derivado tu caso y me gustaría saber si tienes tiempo para conversar ahora.";
-      } else {
-        mensajeField.value = '';
-      }
-    }
+            try {
+                const response = await axios.post(url, null, { params: headers });
+                logToConsole(`Mensaje enviado a ${nombre} (${celular})`);
+            } catch (error) {
+                logToConsole(`Error enviando mensaje a ${nombre} (${celular}): ${error}`);
+            }
+        }
 
-    const flow = "bb848b58-c891-4aec-ac21-738a857bc778";
-    async function enviarMensaje() {
-      const nombre = document.getElementById('nombre').value;
-      const celular = document.getElementById('celular').value;
-      const mensaje = document.getElementById('mensaje').value;
+        document.getElementById("enviarMensajesBtn").addEventListener("click", enviarMensaje);
 
-      if (!nombre || !celular || !mensaje) {
-        alert("Por favor, completa todos los campos.");
-        return;
-      }
-
-      const url = `https://flows.messagebird.com/flows/${flow}/invoke`;
-      const headers = {
-        NOMBRE: nombre,
-        CELULAR: celular,
-        MENSAJE: mensaje
-      };
-
-      try {
-        const response = await axios.post(url, null, { params: headers });
-        logToConsole(`Mensaje enviado a ${nombre} (${celular})`);
-      } catch (error) {
-        logToConsole(`Error enviando mensaje a ${nombre} (${celular}): ${error}`);
-      }
-    }
-
-    function logToConsole(message) {
-      const consoleOutput = document.getElementById('consoleOutput');
-      const timestamp = new Date().toLocaleTimeString();
-      consoleOutput.innerHTML += `<p>[${timestamp}] ${message}</p>`;
-      consoleOutput.scrollTop = consoleOutput.scrollHeight;
-    }
-  </script>
-
+        function logToConsole(message) {
+            const consoleOutput = document.getElementById('consoleOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            consoleOutput.innerHTML += `<p>[${timestamp}] ${message}</p>`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+    </script>
 </body>
-
 </html>
